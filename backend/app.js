@@ -12,28 +12,38 @@ import fileUpload from "express-fileupload";
 const app = express();
 config({ path: "./config/config.env" });
 
+// ✅ Enable JSON parsing **BEFORE** defining routes (Fixes "Cannot POST")
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // ✅ Ensure cookies are parsed
+
+// ✅ CORS Configuration - Allow frontend and authentication headers
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL],
-    method: ["GET", "POST", "DELETE", "PUT"],
-    credentials: true,
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // ✅ Allow cookies & authentication headers
   })
 );
 
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+// ✅ File Upload Middleware
 app.use(
   fileUpload({
     useTempFiles: true,
     tempFileDir: "/tmp/",
   })
 );
+
+// ✅ Database Connection
+dbConnection();
+
+// ✅ API Routes
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
-dbConnection();
 
+// ✅ Global Error Handling Middleware
 app.use(errorMiddleware);
+
 export default app;

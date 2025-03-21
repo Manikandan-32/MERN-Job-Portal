@@ -19,44 +19,55 @@ import MyJobs from "./components/Job/MyJobs";
 
 const App = () => {
   const { isAuthorized, setIsAuthorized, setUser } = useContext(Context);
+
   useEffect(() => {
     const fetchUser = async () => {
+      const token = localStorage.getItem("token"); // ✅ Get token from localStorage
+
+      if (!token) {
+        setIsAuthorized(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(
-          "http://localhost:4000/api/v1/user/getuser",
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get("http://localhost:4000/api/v1/user/getuser", {
+          withCredentials: true,
+          headers: {
+            "Authorization": `Bearer ${token}`, // ✅ Send token in header
+            "Content-Type": "application/json",
+          },
+        });
+
         setUser(response.data.user);
         setIsAuthorized(true);
       } catch (error) {
+        console.error("Authentication error:", error.response?.data || error.message);
         setIsAuthorized(false);
+        localStorage.removeItem("token"); // ✅ Remove token if invalid
       }
     };
+
     fetchUser();
-  }, [isAuthorized]);
+  }, []); // ✅ Runs only once on mount
 
   return (
-    <>
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/job/getall" element={<Jobs />} />
-          <Route path="/job/:id" element={<JobDetails />} />
-          <Route path="/application/:id" element={<Application />} />
-          <Route path="/applications/me" element={<MyApplications />} />
-          <Route path="/job/post" element={<PostJob />} />
-          <Route path="/job/me" element={<MyJobs />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Footer />
-        <Toaster />
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/job/getall" element={<Jobs />} />
+        <Route path="/job/:id" element={<JobDetails />} />
+        <Route path="/application/:id" element={<Application />} />
+        <Route path="/applications/me" element={<MyApplications />} />
+        <Route path="/job/post" element={<PostJob />} />
+        <Route path="/job/me" element={<MyJobs />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Footer />
+      <Toaster />
+    </BrowserRouter>
   );
 };
 

@@ -5,6 +5,7 @@
     "start:backend": "cd backend && npm run dev"
   },
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.7"
   }
 }
